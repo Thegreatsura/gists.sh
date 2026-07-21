@@ -16,7 +16,9 @@ import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 interface PageCopyButtonsProps {
-  content: string;
+  content: string | null;
+  rawContentUrl: string | null;
+  downloadUrl: string | null;
   filename: string;
   originalUrl: string;
   user: string;
@@ -26,6 +28,8 @@ interface PageCopyButtonsProps {
 
 export function PageCopyButtons({
   content,
+  rawContentUrl,
+  downloadUrl,
   filename,
   originalUrl,
   user,
@@ -36,9 +40,24 @@ export function PageCopyButtons({
   const router = useRouter();
   const refreshingRef = useRef(false);
 
-  const handleCopyRaw = useCallback(() => {
-    copy(content, "Raw content copied");
-  }, [copy, content]);
+  const loadRawContent = useCallback(async () => {
+    if (content !== null) return content;
+    if (!rawContentUrl) throw new Error("Raw content is unavailable");
+
+    const response = await fetch(rawContentUrl);
+    if (!response.ok) throw new Error("Failed to load raw content");
+    return response.text();
+  }, [content, rawContentUrl]);
+
+  const handleCopyRaw = useCallback(async () => {
+    try {
+      if (content === null)
+        toast.loading("Loading raw content...", { id: "copy" });
+      await copy(await loadRawContent(), "Raw content copied");
+    } catch {
+      toast.error("Failed to copy raw content", { id: "copy" });
+    }
+  }, [content, copy, loadRawContent]);
 
   const handleCopyFormatted = useCallback(() => {
     const el = document.getElementById("gist-content");
@@ -58,7 +77,7 @@ export function PageCopyButtons({
       }
     });
 
-    copyFormatted(clone.innerHTML, content);
+    copyFormatted(clone.innerHTML, content ?? "");
   }, [copyFormatted, content]);
 
   const handleCopyLink = useCallback(() => {
@@ -70,17 +89,33 @@ export function PageCopyButtons({
   }, [copy, originalUrl]);
 
   const handleDownload = useCallback(() => {
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
+    if (content !== null) {
+      const blob = new Blob([content], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast("File downloaded");
+      return;
+    }
+
+    if (!downloadUrl) return;
+
     const a = document.createElement("a");
-    a.href = url;
+    a.href = downloadUrl;
     a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
     toast("File downloaded");
-  }, [content, filename]);
+  }, [content, downloadUrl, filename]);
+
+  const canCopyRaw = content !== null || rawContentUrl !== null;
+  const canDownload = content !== null || downloadUrl !== null;
 
   const handleOpenOriginal = useCallback(() => {
     window.open(originalUrl, "_blank", "noopener,noreferrer");
@@ -123,10 +158,10 @@ export function PageCopyButtons({
 
       switch (e.key) {
         case "c":
-          handleCopyRaw();
+          if (canCopyRaw) handleCopyRaw();
           break;
         case "d":
-          handleDownload();
+          if (canDownload) handleDownload();
           break;
         case "f":
           if (showCopyFormatted) handleCopyFormatted();
@@ -156,6 +191,8 @@ export function PageCopyButtons({
     handleDownload,
     handleOpenOriginal,
     handleRefresh,
+    canCopyRaw,
+    canDownload,
     showCopyFormatted,
   ]);
 
@@ -171,7 +208,7 @@ export function PageCopyButtons({
         <DropdownMenu.Trigger asChild>
           <button
             className={triggerClass}
-            aria-label={copied ? "Copied" : "Copy"}
+            aria-label={copied ? "Copied" : "File actions"}
             suppressHydrationWarning
           >
             {copied ? (
@@ -182,11 +219,13 @@ export function PageCopyButtons({
           </button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content side="bottom" align="end">
-          <DropdownMenu.Item onSelect={handleCopyRaw}>
-            <Copy size={14} />
-            <span className="flex-1">Copy raw</span>
-            <span className={shortcutClass}>C</span>
-          </DropdownMenu.Item>
+          {canCopyRaw && (
+            <DropdownMenu.Item onSelect={handleCopyRaw}>
+              <Copy size={14} />
+              <span className="flex-1">Copy raw</span>
+              <span className={shortcutClass}>C</span>
+            </DropdownMenu.Item>
+          )}
           {showCopyFormatted && (
             <DropdownMenu.Item onSelect={handleCopyFormatted}>
               <Files size={14} />
@@ -194,11 +233,13 @@ export function PageCopyButtons({
               <span className={shortcutClass}>F</span>
             </DropdownMenu.Item>
           )}
-          <DropdownMenu.Item onSelect={handleDownload}>
-            <Download size={14} />
-            <span className="flex-1">Download file</span>
-            <span className={shortcutClass}>D</span>
-          </DropdownMenu.Item>
+          {canDownload && (
+            <DropdownMenu.Item onSelect={handleDownload}>
+              <Download size={14} />
+              <span className="flex-1">Download file</span>
+              <span className={shortcutClass}>D</span>
+            </DropdownMenu.Item>
+          )}
           <DropdownMenu.Item onSelect={handleCopyLink}>
             <Link size={14} />
             <span className="flex-1">Copy link</span>

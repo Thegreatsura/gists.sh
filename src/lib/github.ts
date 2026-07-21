@@ -4,6 +4,7 @@ export interface GistFile {
   language: string | null;
   raw_url: string;
   size: number;
+  truncated?: boolean;
   content: string;
 }
 
@@ -17,10 +18,12 @@ export interface Gist {
   id: string;
   description: string | null;
   public: boolean;
+  truncated?: boolean;
   files: Record<string, GistFile>;
   owner: GistOwner | null;
   created_at: string;
   updated_at: string;
+  git_pull_url: string;
   html_url: string;
 }
 
@@ -148,7 +151,9 @@ export function isICS(filename: string): boolean {
 }
 
 export function isStructuredData(filename: string): boolean {
-  return isJSON(filename) || isCSV(filename) || isYAML(filename) || isICS(filename);
+  return (
+    isJSON(filename) || isCSV(filename) || isYAML(filename) || isICS(filename)
+  );
 }
 
 export function getFileExtension(filename: string): string {
