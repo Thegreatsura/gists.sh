@@ -1,5 +1,9 @@
 packages: []
 minimumReleaseAge: 10080
+minimumReleaseAgeExclude:
+  # Released 2026-10-17; requested explicitly for the Mermaid renderer swap.
+  # Drop this once it is a week old.
+  - pele@1.6.0
 blockExoticSubdeps: true
 strictDepBuilds: true
 allowBuilds:

@@ -472,9 +472,55 @@ pre code {
   font-size: inherit;
 }
 
-/* ── Mermaid diagrams (see mermaid-renderer.tsx) ────────────────── */
+/* ── Mermaid diagrams (see rehype-mermaid-blocks.ts) ────────────── */
 
-/* Unrendered state doubles as the fallback: the source as a code block */
+/* Pele colors its SVGs through these variables, so theme switches restyle
+   diagrams without re-rendering. Text in --pele-bg sits on the accent and
+   series fills (pie slices, branches, sections), so those stay dark in light
+   mode and light in dark mode. Series alternate lightness so neighboring
+   slices and their legend swatches stay apart. Gantt critical tasks keep
+   Pele's own muted red. */
+.pele {
+  --pele-font: var(--font-sans);
+  --pele-font-mono: var(--font-mono);
+  --pele-bg: var(--color-white);
+  --pele-fg: var(--color-neutral-900);
+  --pele-muted: var(--color-neutral-500);
+  --pele-line: var(--color-neutral-500);
+  --pele-surface: var(--color-neutral-50);
+  --pele-surface-alt: var(--color-neutral-100);
+  --pele-border: var(--color-neutral-300);
+  --pele-accent: var(--color-neutral-700);
+  --pele-series-1: var(--color-neutral-800);
+  --pele-series-2: var(--color-neutral-500);
+  --pele-series-3: var(--color-neutral-650);
+  --pele-series-4: var(--color-neutral-950);
+  --pele-series-5: var(--color-neutral-450);
+  --pele-series-6: var(--color-neutral-700);
+  --pele-series-7: var(--color-neutral-550);
+  --pele-series-8: var(--color-neutral-900);
+}
+
+.dark .pele {
+  --pele-bg: var(--color-neutral-950);
+  --pele-fg: var(--color-neutral-200);
+  --pele-muted: var(--color-neutral-400);
+  --pele-line: var(--color-neutral-500);
+  --pele-surface: var(--color-neutral-900);
+  --pele-surface-alt: var(--color-neutral-850);
+  --pele-border: var(--color-neutral-700);
+  --pele-accent: var(--color-neutral-300);
+  --pele-series-1: var(--color-neutral-250);
+  --pele-series-2: var(--color-neutral-450);
+  --pele-series-3: var(--color-neutral-350);
+  --pele-series-4: var(--color-neutral-50);
+  --pele-series-5: var(--color-neutral-550);
+  --pele-series-6: var(--color-neutral-400);
+  --pele-series-7: var(--color-neutral-150);
+  --pele-series-8: var(--color-neutral-500);
+}
+
+/* Invalid diagrams fall back to their source as a code block */
 .markdown-body .mermaid-diagram {
   margin: 1.5em 0;
   padding: 1.25rem;
@@ -501,7 +547,7 @@ pre code {
   cursor: zoom-in;
   /* Wide diagrams break out of the text column, centered on it, up to the
      viewport edges. --diagram-width is the SVG's natural width, set by
-     mermaid-renderer.tsx; the extra accounts for padding and border. */
+     rehype-mermaid-blocks.ts; the extra accounts for padding and border. */
   width: clamp(
     100%,
     calc(var(--diagram-width, 0px) + 2.5rem + 2px),
@@ -516,8 +562,28 @@ pre code {
   border-color: var(--color-neutral-800);
 }
 
-.markdown-body .mermaid-diagram svg {
-  height: auto;
+/* Diagrams that Pele lays out differently for phones carry both layouts */
+.markdown-body .mermaid-wide {
+  display: contents;
+}
+
+.markdown-body .mermaid-narrow {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  /* Leaves the narrow layout its full width on a 390px phone */
+  .markdown-body .mermaid-diagram[data-rendered] {
+    padding: 0.75rem;
+  }
+
+  .markdown-body .mermaid-wide {
+    display: none;
+  }
+
+  .markdown-body .mermaid-narrow {
+    display: contents;
+  }
 }
 
 .mermaid-expand-btn {
@@ -779,7 +845,9 @@ pre code {
   --md-prose-size: 0.875rem;
 }
 
+/* Diagram labels are measured in Geist Sans (geist-measurer.ts), so diagrams
+   keep it rather than overflow their nodes */
 .font-mono .markdown-body,
-.font-mono .markdown-body * {
+.font-mono .markdown-body *:not(.pele, .pele *) {
   font-family: var(--font-mono) !important;
 }

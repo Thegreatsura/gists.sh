@@ -1,12 +1,15 @@
 import { HeadingAnchorHandler } from "@/components/heading-anchor-handler";
-import { MermaidRenderer } from "@/components/mermaid-renderer";
+import { MermaidExpandHandler } from "@/components/mermaid-expand-handler";
 import {
   FrontmatterValue,
   isArrayOfObjects,
   isPlainObject,
 } from "@/components/renderers/structured-data-primitives";
 import { rehypeExtractToc } from "@/lib/rehype-extract-toc";
-import { rehypeMermaidBlocks } from "@/lib/rehype-mermaid-blocks";
+import {
+  pageSvgBudget,
+  rehypeMermaidBlocks,
+} from "@/lib/rehype-mermaid-blocks";
 import { rehypeWrapTables } from "@/lib/rehype-wrap-tables";
 import type { TocEntry } from "@/lib/toc";
 import rehypeShiki from "@shikijs/rehype";
@@ -145,7 +148,7 @@ export async function MarkdownRenderer({ content }: MarkdownRendererProps) {
     .use(rehypeSanitize, sanitizeSchema)
     .use(rehypeWrapTables)
     .use(rehypeExtractToc(headings))
-    .use(rehypeMermaidBlocks)
+    .use(rehypeMermaidBlocks, { budget: pageSvgBudget() })
     .use(rehypeShiki, {
       themes: {
         light: "github-light",
@@ -153,13 +156,16 @@ export async function MarkdownRenderer({ content }: MarkdownRendererProps) {
       },
       defaultLanguage: "tsx",
     })
-    .use(rehypeStringify)
+    // rehypeRaw has already parsed the gist's own HTML into sanitized
+    // elements, so the only raw nodes left are the SVGs rehypeMermaidBlocks
+    // gets from Pele
+    .use(rehypeStringify, { allowDangerousHtml: true })
     .process(markdownContent);
 
   return (
     <>
       <HeadingAnchorHandler />
-      <MermaidRenderer />
+      <MermaidExpandHandler />
       {hasFrontmatter && <FrontmatterDisplay data={frontmatter} />}
       <div
         className="markdown-body max-w-none"

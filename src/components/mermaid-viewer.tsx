@@ -89,7 +89,7 @@ export function MermaidViewer({ svg, onClose }: MermaidViewerProps) {
     );
   }, []);
 
-  // Mermaid sizes its SVG to the page column; render it at natural size and
+  // Pele's SVG shrinks to fit the page column; render it at natural size and
   // let the transform do the scaling. Injected here rather than through
   // dangerouslySetInnerHTML, which re-applied the original markup on re-render.
   useLayoutEffect(() => {

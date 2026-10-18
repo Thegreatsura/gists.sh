@@ -31,7 +31,7 @@ Additional features:
 - **Frontmatter**: YAML front matter is parsed and displayed as a structured table above the content.
 - **Table of contents**: Auto-generated floating TOC for documents with 3+ headings.
 - **Heading anchors**: Click any heading to copy a permalink to that section.
-- **Mermaid diagrams**: fenced code blocks tagged \`mermaid\` render as diagrams in light and dark mode. Wide diagrams extend beyond the text column, and clicking one opens a full-screen pan and zoom view.
+- **Mermaid diagrams**: fenced code blocks tagged \`mermaid\` render as diagrams in light and dark mode. Wide diagrams extend beyond the text column and get a narrower layout on phones, and clicking one opens a full-screen pan and zoom view.
 
 ### Structured data viewers
 

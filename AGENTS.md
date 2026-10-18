@@ -55,4 +55,4 @@ Copy `.env.local.example` to `.env.local` and fill in:
 - Shiki for syntax highlighting (not Prism) — better theme support, same engine as VS Code
 - GitHub API responses are cached aggressively (ISR, 24hr revalidation) since gists rarely change
 - Raw content served via API route with proper Content-Type headers
-- Mermaid diagrams render client-side (Mermaid needs a DOM) and the library is lazy-loaded only on pages with a diagram; see `src/components/mermaid-renderer.tsx`
+- Mermaid diagrams render on the server with Pele inside the rehype pipeline (`src/lib/rehype-mermaid-blocks.ts`), so they ship as SVG with no client JS and recolor for dark mode through `--pele-*` variables in `globals.css`. Labels are measured with Geist's real glyph widths (`src/lib/geist-measurer.ts`) because Pele's no-DOM width table cramps them; rerun `node scripts/geist-widths.mjs` after upgrading `geist`. Phones get a second, narrower layout, and remote images in diagrams are off (tracking pixels, blocked by the CSP anyway).

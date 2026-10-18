@@ -13,6 +13,8 @@ export type FilePreviewStatus =
  * Highlighted code and structured viewers can expand source files into DOM
  * trees more than ten times larger than the input. These limits bound both an
  * individual panel and the aggregate work from eagerly rendered gist tabs.
+ * Mermaid diagrams can grow far more, so rehype-mermaid-blocks.ts also caps
+ * their SVG per page.
  */
 export const MAX_INLINE_PREVIEW_BYTES = 128 * 1024;
 export const MAX_TOTAL_INLINE_PREVIEW_BYTES = 256 * 1024;

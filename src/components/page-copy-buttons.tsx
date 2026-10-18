@@ -68,6 +68,12 @@ export function PageCopyButtons({
     // Remove injected copy buttons from CodeBlockEnhancer
     clone.querySelectorAll(".code-copy-btn").forEach((btn) => btn.remove());
 
+    // Diagrams carry a phone layout and an expand button, which the pasted
+    // copy has no CSS to hide (rehype-mermaid-blocks.ts)
+    clone
+      .querySelectorAll(".mermaid-narrow, .mermaid-expand-btn")
+      .forEach((el) => el.remove());
+
     // Unwrap CodeBlockEnhancer wrapper divs
     clone.querySelectorAll(".code-block-wrapper").forEach((wrapper) => {
       const pre = wrapper.querySelector("pre");
