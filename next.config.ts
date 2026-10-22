@@ -16,6 +16,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Since 16.4, `next dev` appends a managed block to AGENTS.md whenever it
+  // detects a coding agent. AGENTS.md here is hand-maintained.
+  agentRules: false,
   images: {
     remotePatterns: [
       {

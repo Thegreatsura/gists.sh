@@ -4,6 +4,12 @@ minimumReleaseAgeExclude:
   # Released 2026-10-17; requested explicitly for the Mermaid renderer swap.
   # Drop this once it is a week old.
   - pele@1.6.0
+  # Released 2026-10-15; latest patch on top of the 16.4.1 security release
+  # (two RCEs and a DoS). Drop these once they are a week old. pnpm rejects
+  # version-scoped globs; next pins its @next/* packages to 16.4.2 exactly.
+  - next@16.4.2
+  - "@next/*"
+  - eslint-config-next@16.4.2
 blockExoticSubdeps: true
 strictDepBuilds: true
 allowBuilds:
